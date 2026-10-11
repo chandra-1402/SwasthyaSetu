@@ -36,34 +36,45 @@ flowchart LR
 
 ## 2. High-Level System Architecture
 
-### 2.1 C4 Context Level Diagram
+### 2.1 System Context Architecture
 
 ```mermaid
-C4Context
-    title SwasthyaSetu High-Level System Context
+flowchart TD
+    subgraph Users ["Primary Stakeholders"]
+        ASHA["🩺 ASHA Worker\n(Frontline screening in village sub-centres)"]
+        PATIENT["🧑‍🍼 Patient / Family\n(Citizens tracking care & OPD)"]
+        STAFF["🏥 Hospital Staff\n(Emergency bed & triage coordinators)"]
+    end
 
-    Person(asha, "ASHA Worker", "Frontline health worker screening rural families in village sub-centres.")
-    Person(patient, "Patient / Citizen", "Maternal mothers, elderly citizens, and families tracking care.")
-    Person(hospitalStaff, "Hospital Triage Staff", "District hospital and CHC emergency receptionists & doctors.")
+    subgraph Platform ["SwasthyaSetu Core Platform"]
+        APP["SwasthyaSetu Web Application\n(React 19 + TypeScript + Vite)"]
+        TRIAGE["Algorithmic CDSS Engine\n(Offline clinical risk stratification)"]
+        SYNC["Offline-First Sync Engine\n(LocalStorage + Mutation Queue)"]
+        BEDS["Live Bed & Facility Directory\n(ICU, Maternity, Blood Bank Tracker)"]
+    end
 
-    System(swasthyaSetu, "SwasthyaSetu Platform", "Offline-first clinical triage, hospital bed tracking, and emergency referral hub.")
+    subgraph External ["National & Emergency Infrastructure"]
+        AMB["🚑 108/102 Emergency Dispatch\n(Ambulance Fleet Integration)"]
+        ABDM["🇮🇳 ABDM / ABHA Health Registry\n(14-digit Ayushman Bharat ID)"]
+        SMS["📱 Telecom SMS Gateway\n(Low-connectivity SMS alerts)"]
+    end
 
-    System_Ext(ambulance, "108/102 Ambulance Dispatch", "State emergency fleet management system.")
-    System_Ext(abdm, "ABDM / ABHA Sandbox", "National Ayushman Bharat Digital Mission health registry.")
-    System_Ext(smsGate, "SMS Gateway", "Local telecom notification gateway for low-connectivity citizens.")
+    ASHA -->|"Patient Intake, CDSS Screening & Referrals"| APP
+    PATIENT -->|"Token Tracking, Lab Reports & Bed Discovery"| APP
+    STAFF -->|"Bed Availability Updates & Referral Intake"| APP
 
-    Rel(asha, swasthyaSetu, "Registers patients, assesses vitals, executes triage, dispatches referrals", "HTTPS / LocalStorage")
-    Rel(patient, swasthyaSetu, "Checks referral timeline, books OPD appointments, views lab records", "HTTPS")
-    Rel(hospitalStaff, swasthyaSetu, "Updates ICU/labor beds, accepts incoming emergency cases", "HTTPS")
+    APP --- TRIAGE
+    APP --- SYNC
+    APP --- BEDS
 
-    Rel(swasthyaSetu, ambulance, "Automates 108 emergency vehicle dispatch", "REST API")
-    Rel(swasthyaSetu, abdm, "Links 14-digit ABHA Health IDs and consent records", "REST API")
-    Rel(swasthyaSetu, smsGate, "Transmits offline SMS alerts and referral tokens", "SMPP / REST")
+    APP -->|"Automated 108 Emergency Trigger"| AMB
+    APP -->|"ABHA ID Verification & Health Locker"| ABDM
+    APP -->|"Offline Notification & Referral Slips"| SMS
 ```
 
 ---
 
-### 2.2 C4 Container & Component Architecture
+### 2.2 Container & Component Architecture
 
 ```mermaid
 graph TD

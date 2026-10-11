@@ -19,7 +19,210 @@
 2. **Delay in reaching the right facility:** Real-time capacity awareness across nearby hospitals (ICU beds, maternal labor wards, on-duty specialists) prevents blind transfers.
 3. **Delay in receiving care:** Automated emergency referrals (e.g. `REF-2026-JH-8842`) pre-alert hospital admission and triage teams while the 108 ambulance is en route.
 
-Detailed architecture, C4 diagrams, and algorithmic models are documented in the [Technical Design Document (TECHNICAL_DESIGN.md)](./TECHNICAL_DESIGN.md).
+```mermaid
+flowchart LR
+    D1["Delay 1: Seeking Care\n(Lack of triage, missed red flags)"]
+    D2["Delay 2: Reaching Facility\n(Blind referrals, ambulance delays)"]
+    D3["Delay 3: Receiving Care\n(Beds unavailable, specialist absent)"]
+
+    D1 --> S1["SwasthyaSetu Frontline CDSS\n(Instant offline algorithmic risk triage)"]
+    D2 --> S2["Live Hospital Bed & Facility Tracker\n(Smart geospatial referral routing)"]
+    D3 --> S3["Automated Pre-Alerts & 108 Dispatch\n(Prioritized emergency admission token)"]
+
+    style D1 fill:#fee2e2,stroke:#ef4444,stroke-width:1.5px
+    style D2 fill:#fee2e2,stroke:#ef4444,stroke-width:1.5px
+    style D3 fill:#fee2e2,stroke:#ef4444,stroke-width:1.5px
+    style S1 fill:#dcfce7,stroke:#22c55e,stroke-width:2px
+    style S2 fill:#dcfce7,stroke:#22c55e,stroke-width:2px
+    style S3 fill:#dcfce7,stroke:#22c55e,stroke-width:2px
+```
+
+Detailed specifications, math, and entity models are documented in the [Technical Design Document (TECHNICAL_DESIGN.md)](./TECHNICAL_DESIGN.md).
+
+---
+
+## 🏛️ System Architecture & Diagrams
+
+### 1. High-Level System Context Architecture
+
+```mermaid
+flowchart TD
+    subgraph Users ["Primary Stakeholders"]
+        ASHA["🩺 ASHA Worker\n(Frontline screening in village sub-centres)"]
+        PATIENT["🧑‍🍼 Patient / Family\n(Citizens tracking care & OPD)"]
+        STAFF["🏥 Hospital Staff\n(Emergency bed & triage coordinators)"]
+    end
+
+    subgraph Platform ["SwasthyaSetu Core Platform"]
+        APP["SwasthyaSetu Web Application\n(React 19 + TypeScript + Vite)"]
+        TRIAGE["Algorithmic CDSS Engine\n(Offline clinical risk stratification)"]
+        SYNC["Offline-First Sync Engine\n(LocalStorage + Mutation Queue)"]
+        BEDS["Live Bed & Facility Directory\n(ICU, Maternity, Blood Bank Tracker)"]
+    end
+
+    subgraph External ["National & Emergency Infrastructure"]
+        AMB["🚑 108/102 Emergency Dispatch\n(Ambulance Fleet Integration)"]
+        ABDM["🇮🇳 ABDM / ABHA Health Registry\n(14-digit Ayushman Bharat ID)"]
+        SMS["📱 Telecom SMS Gateway\n(Low-connectivity SMS alerts)"]
+    end
+
+    ASHA -->|"Patient Intake, CDSS Screening & Referrals"| APP
+    PATIENT -->|"Token Tracking, Lab Reports & Bed Discovery"| APP
+    STAFF -->|"Bed Availability Updates & Referral Intake"| APP
+
+    APP --- TRIAGE
+    APP --- SYNC
+    APP --- BEDS
+
+    APP -->|"Automated 108 Emergency Trigger"| AMB
+    APP -->|"ABHA ID Verification & Health Locker"| ABDM
+    APP -->|"Offline Notification & Referral Slips"| SMS
+```
+
+---
+
+### 2. Dual-Portal Component Architecture
+
+```mermaid
+graph TD
+    subgraph Client Application [React 19 + TypeScript + Tailwind CSS]
+        Router["React Router v7 Dynamic Navigation"]
+        
+        subgraph Portals ["Dual Operational Interfaces"]
+            AshaPortal["ASHA Frontline Portal (/asha/*)\n- Patient Intake & Screening\n- 4-Stage Clinical Triage\n- Real-Time Referral Dispatch\n- Offline Synchronization Manager"]
+            PatientPortal["HospiTrack Patient Portal (/patient/*)\n- Active Emergency Referral Tracker\n- Geospatial Hospital Radar Map\n- NABL Lab Report Viewer\n- Digital OPD Tokens & ABHA Card"]
+        end
+
+        subgraph Core Engines
+            CDSS["Algorithmic CDSS Engine (triageEngine.ts)\n- Vitals Sanitization\n- Danger Sign Parser\n- Maternal & Pediatric Scoring\n- Facility Routing Logic"]
+            StateSync["Reactive State & Sync Orchestrator\n- LocalStorage Reactive Buffer\n- Network Online/Offline Sentinel\n- FIFO Referral Transaction Queue"]
+        end
+    end
+
+    subgraph Persistence Layer
+        BrowserCache["Browser IndexedDB / LocalStorage\n- Offline Patients\n- Pending Synced Referrals\n- Hospital Bed Cache"]
+    end
+
+    subgraph Backend & Integration Services
+        ViteDev["Vite Dev / Reverse Proxy (Port 7000)"]
+        APIServices["Mock & Live REST Endpoints\n- /api/referrals\n- /api/hospitals\n- /api/patients"]
+    end
+
+    Router --> AshaPortal
+    Router --> PatientPortal
+    AshaPortal --> CDSS
+    AshaPortal --> StateSync
+    PatientPortal --> StateSync
+    StateSync --> BrowserCache
+    StateSync -. Sync over HTTP .-> APIServices
+    ClientApplication --> ViteDev
+```
+
+---
+
+### 3. Clinical Decision Support (CDSS) Triage Flowchart
+
+```mermaid
+flowchart TD
+    Start(["Intake Patient Vitals & Symptoms"]) --> Clean["Sanitize & Bound Vitals"]
+    Clean --> CheckO2{"SpO2 Level?"}
+    
+    CheckO2 -- "< 88%" --> Add55["+55 Score\nCritical Hypoxemia"]
+    CheckO2 -- "88 - 92%" --> Add35["+35 Score\nSignificant Hypoxemia"]
+    CheckO2 -- ">= 93%" --> NextBP["Evaluate Blood Pressure"]
+    
+    Add55 --> NextBP
+    Add35 --> NextBP
+
+    NextBP --> CheckBP{"BP Range?"}
+    CheckBP -- "Systolic >= 170 or Diastolic >= 110" --> BP45["+45 Score (Crisis)"]
+    CheckBP -- "Systolic < 85" --> BP40["+40 Score (Hypovolemic Shock)"]
+    CheckBP -- "Systolic >= 145 or Diastolic >= 95" --> BP25["+25 Score (Hypertension)"]
+    CheckBP -- "Normal" --> MaternalCheck["Maternal Alert Check"]
+    
+    BP45 --> MaternalCheck
+    BP40 --> MaternalCheck
+    BP25 --> MaternalCheck
+
+    MaternalCheck --> Preg{"Is Pregnant?"}
+    Preg -- "Yes" --> MatAlert{"Hypertension + Headache / Blurry Vision?"}
+    MatAlert -- "Yes" --> MatHigh["+40 Score (Pre-Eclampsia Risk)"]
+    MatAlert -- "No Bleed?" --> CheckBleed{"Vaginal Bleeding?"}
+    CheckBleed -- "Yes" --> Antepartum["+50 Score (Antepartum Hemorrhage)"]
+    CheckBleed -- "No" --> EmergKeywords["Emergency Symptoms Checklist"]
+    MatHigh --> EmergKeywords
+    Antepartum --> EmergKeywords
+    Preg -- "No" --> EmergKeywords
+
+    EmergKeywords --> FinalTally["Compute Final Score (12 - 99)"]
+
+    FinalTally --> ScoreEval{"Score Threshold"}
+    ScoreEval -- "Score >= 90 or SpO2 < 85" --> Emergency["EMERGENCY (Code Red)\nImmediate 108 transport to Tertiary Trauma Hospital"]
+    ScoreEval -- "Score >= 80 or Danger Sign" --> High["HIGH RISK (Immediate)\nUrgent referral (<2h) to District Hospital / FRU"]
+    ScoreEval -- "Score 45 - 79" --> Moderate["MODERATE RISK (Priority)\nEvaluate at CHC within 24h"]
+    ScoreEval -- "Score < 45" --> Low["LOW RISK (Routine)\nSub-Centre / Home monitoring & red-flag precautions"]
+
+    style Emergency fill:#fecaca,stroke:#dc2626,stroke-width:2px
+    style High fill:#fed7aa,stroke:#ea580c,stroke-width:2px
+    style Moderate fill:#fef08a,stroke:#ca8a04,stroke-width:2px
+    style Low fill:#bbf7d0,stroke:#16a34a,stroke-width:2px
+```
+
+---
+
+### 4. Emergency Referral & Hospital Dispatch Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor ASHA as ASHA Frontline Worker
+    participant App as SwasthyaSetu Engine
+    participant Cache as Local Storage & Queue
+    participant Hospital as District Hospital Triage
+    participant Fleet as 108 Ambulance Dispatch
+    actor Patient as Patient / Family
+
+    ASHA->>App: Submits screening data on patient (Sita Devi)
+    App->>App: Executes evaluateClinicalTriage()
+    Note over App: Triage Result: HIGH RISK (Score: 84)<br/>Suspected Pre-Eclampsia
+    ASHA->>App: Selects District Hospital Hazaribagh & Dispatches Referral
+    App->>Cache: Persists referral record locally (Immediate offline safety)
+    App->>Hospital: Transmits referral payload & patient vitals
+    App->>Fleet: Sends automatic 108 Ambulance dispatch notification
+    Hospital-->>App: Acknowledges case ("Hospital Accepted" & Bed Reserved)
+    App->>Patient: Displays Active Referral Banner on Patient Portal
+    Patient->>App: Tracks real-time status and ambulance ETA
+```
+
+---
+
+### 5. Offline-First Synchronization State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> OnlineState
+
+    OnlineState --> NetworkDrop: Device loses cellular / Wi-Fi
+    NetworkDrop --> OfflineState: Online indicator toggles to RED
+
+    state OfflineState {
+        [*] --> LocalDrafting
+        LocalDrafting --> BufferQueue: User saves Patient / Referral
+        BufferQueue --> PendingSyncBadge: Increments pending badge counter
+    }
+
+    OfflineState --> NetworkRestored: Connection regained
+    NetworkRestored --> SyncExecution: User clicks "Sync Now" or auto-poll triggers
+
+    state SyncExecution {
+        FetchQueue --> ProcessBatch: FIFO extraction
+        ProcessBatch --> ServerReplication: Push to remote API
+        ServerReplication --> ConflictResolution: Verify server timestamps
+        ConflictResolution --> PurgeLocalBuffer: Clear synced items
+    }
+
+    SyncExecution --> OnlineState: All records replicated (Online GREEN)
+```
 
 ---
 
