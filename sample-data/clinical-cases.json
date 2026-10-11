@@ -1,0 +1,134 @@
+{
+  "description": "SwasthyaSetu Clinical Decision Support & Triage Test Scenarios",
+  "version": "1.0.0",
+  "cases": [
+    {
+      "id": "CASE-MATERNAL-01",
+      "name": "Sita Devi",
+      "age": 26,
+      "gender": "female",
+      "isPregnant": true,
+      "pregnancyWeeks": 32,
+      "village": "Salga, Chatra",
+      "chiefComplaint": "Severe frontal headache and blurry vision for 2 days",
+      "symptoms": ["headache", "blurred vision", "swelling in feet"],
+      "vitals": {
+        "temperature": 98.6,
+        "heartRate": 104,
+        "bloodPressureSystolic": 165,
+        "bloodPressureDiastolic": 105,
+        "spO2": 96,
+        "respiratoryRate": 22
+      },
+      "expectedTriage": {
+        "riskLevel": "HIGH",
+        "urgencyLevel": "Immediate",
+        "minScore": 80,
+        "recommendedFacilityType": "District Hospital or FRU (First Referral Unit)",
+        "diagnosticsTarget": "Severe Pre-Eclampsia / Imminent Eclampsia"
+      }
+    },
+    {
+      "id": "CASE-RESP-02",
+      "name": "Ramesh Mahto",
+      "age": 62,
+      "gender": "male",
+      "isPregnant": false,
+      "village": "Barhi, Hazaribagh",
+      "chiefComplaint": "Severe acute respiratory distress and confusion",
+      "symptoms": ["severe breathing difficulty", "chest congestion", "dizziness"],
+      "vitals": {
+        "temperature": 101.4,
+        "heartRate": 128,
+        "bloodPressureSystolic": 90,
+        "bloodPressureDiastolic": 60,
+        "spO2": 82,
+        "respiratoryRate": 34
+      },
+      "expectedTriage": {
+        "riskLevel": "EMERGENCY",
+        "urgencyLevel": "Code Red",
+        "minScore": 90,
+        "recommendedFacilityType": "Tertiary Trauma Care / Multi-Specialty Hospital",
+        "diagnosticsTarget": "Severe Hypoxemic Respiratory Failure / Sepsis"
+      }
+    },
+    {
+      "id": "CASE-OBSTETRIC-03",
+      "name": "Pooja Kumari",
+      "age": 22,
+      "gender": "female",
+      "isPregnant": true,
+      "pregnancyWeeks": 28,
+      "village": "Gola, Ramgarh",
+      "chiefComplaint": "Painless vaginal bleeding and abdominal heaviness",
+      "symptoms": ["profuse bleeding", "dizziness"],
+      "vitals": {
+        "temperature": 98.4,
+        "heartRate": 118,
+        "bloodPressureSystolic": 92,
+        "bloodPressureDiastolic": 58,
+        "spO2": 95,
+        "respiratoryRate": 20
+      },
+      "expectedTriage": {
+        "riskLevel": "EMERGENCY",
+        "urgencyLevel": "Code Red",
+        "minScore": 90,
+        "recommendedFacilityType": "Tertiary Trauma Care / Multi-Specialty Hospital",
+        "diagnosticsTarget": "Antepartum Hemorrhage / Placenta Previa"
+      }
+    },
+    {
+      "id": "CASE-PEDIATRIC-04",
+      "name": "Aarav Kumar (Child)",
+      "age": 4,
+      "gender": "male",
+      "isPregnant": false,
+      "village": "Itkhori, Chatra",
+      "chiefComplaint": "High fever, persistent vomiting and lethargy for 24 hours",
+      "symptoms": ["fever", "vomiting", "dizziness"],
+      "vitals": {
+        "temperature": 102.2,
+        "heartRate": 115,
+        "bloodPressureSystolic": 100,
+        "bloodPressureDiastolic": 65,
+        "spO2": 97,
+        "respiratoryRate": 26
+      },
+      "expectedTriage": {
+        "riskLevel": "MODERATE",
+        "urgencyLevel": "Priority",
+        "minScore": 45,
+        "recommendedFacilityType": "Community Health Centre (CHC) / Medical Officer",
+        "diagnosticsTarget": "Acute Gastroenteritis / Moderate Dehydration"
+      }
+    },
+    {
+      "id": "CASE-ROUTINE-05",
+      "name": "Anita Devi",
+      "age": 24,
+      "gender": "female",
+      "isPregnant": true,
+      "pregnancyWeeks": 16,
+      "village": "Mandu, Ramgarh",
+      "chiefComplaint": "Routine 2nd Trimester ANC Checkup, mild back stiffness",
+      "symptoms": ["mild backache"],
+      "vitals": {
+        "temperature": 98.6,
+        "heartRate": 74,
+        "bloodPressureSystolic": 118,
+        "bloodPressureDiastolic": 76,
+        "spO2": 99,
+        "respiratoryRate": 16
+      },
+      "expectedTriage": {
+        "riskLevel": "LOW",
+        "urgencyLevel": "Routine",
+        "maxScore": 44,
+        "recommendedFacilityType": "Sub-Centre / Home Monitoring",
+        "diagnosticsTarget": "Normal Physiological Pregnancy"
+      }
+    }
+  ]
+}
