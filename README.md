@@ -29,12 +29,12 @@ flowchart LR
     D2 --> S2["Live Hospital Bed & Facility Tracker\n(Smart geospatial referral routing)"]
     D3 --> S3["Automated Pre-Alerts & 108 Dispatch\n(Prioritized emergency admission token)"]
 
-    style D1 fill:#fee2e2,stroke:#ef4444,stroke-width:1.5px
-    style D2 fill:#fee2e2,stroke:#ef4444,stroke-width:1.5px
-    style D3 fill:#fee2e2,stroke:#ef4444,stroke-width:1.5px
-    style S1 fill:#dcfce7,stroke:#22c55e,stroke-width:2px
-    style S2 fill:#dcfce7,stroke:#22c55e,stroke-width:2px
-    style S3 fill:#dcfce7,stroke:#22c55e,stroke-width:2px
+    style D1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#ffffff
+    style D2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#ffffff
+    style D3 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#ffffff
+    style S1 fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style S2 fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ffffff
+    style S3 fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ffffff
 ```
 
 Detailed specifications, math, and entity models are documented in the [Technical Design Document (TECHNICAL_DESIGN.md)](./TECHNICAL_DESIGN.md).
@@ -162,10 +162,10 @@ flowchart TD
     ScoreEval -- "Score 45 - 79" --> Moderate["MODERATE RISK (Priority)\nEvaluate at CHC within 24h"]
     ScoreEval -- "Score < 45" --> Low["LOW RISK (Routine)\nSub-Centre / Home monitoring & red-flag precautions"]
 
-    style Emergency fill:#fecaca,stroke:#dc2626,stroke-width:2px
-    style High fill:#fed7aa,stroke:#ea580c,stroke-width:2px
-    style Moderate fill:#fef08a,stroke:#ca8a04,stroke-width:2px
-    style Low fill:#bbf7d0,stroke:#16a34a,stroke-width:2px
+    style Emergency fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#ffffff
+    style High fill:#7c2d12,stroke:#f97316,stroke-width:2px,color:#ffffff
+    style Moderate fill:#713f12,stroke:#eab308,stroke-width:2px,color:#ffffff
+    style Low fill:#064e3b,stroke:#22c55e,stroke-width:2px,color:#ffffff
 ```
 
 ---
